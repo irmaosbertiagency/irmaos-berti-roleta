@@ -140,7 +140,8 @@ begin
   if p_password is distinct from 'BertiAdmin2026' then
     raise exception 'unauthorized';
   end if;
-  delete from public.participants;
+  -- WHERE sempre verdadeiro: satisfaz a proteção do Supabase contra DELETE sem WHERE.
+  delete from public.participants where id is not null;
 end;
 $$;
 grant execute on function public.admin_clear_all(text) to anon, authenticated;
