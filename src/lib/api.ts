@@ -107,3 +107,42 @@ export async function listParticipants(): Promise<Participant[]> {
 
   return [];
 }
+
+export async function deleteParticipant(
+  tiktok: string,
+  password: string,
+): Promise<void> {
+  if (supabaseConfigured) {
+    const res = await fetch(`${SUPA_URL}/rest/v1/rpc/admin_delete`, {
+      method: "POST",
+      headers: supaHeaders(),
+      body: JSON.stringify({ p_password: password, p_tiktok: tiktok }),
+    });
+    if (!res.ok) {
+      throw new Error(`admin_delete ${res.status}: ${await res.text()}`);
+    }
+    return;
+  }
+  if (import.meta.env.DEV) {
+    const { deleteParticipant: localDel } = await import("./participants");
+    await localDel({ data: { tiktok } });
+  }
+}
+
+export async function clearAllParticipants(password: string): Promise<void> {
+  if (supabaseConfigured) {
+    const res = await fetch(`${SUPA_URL}/rest/v1/rpc/admin_clear_all`, {
+      method: "POST",
+      headers: supaHeaders(),
+      body: JSON.stringify({ p_password: password }),
+    });
+    if (!res.ok) {
+      throw new Error(`admin_clear_all ${res.status}: ${await res.text()}`);
+    }
+    return;
+  }
+  if (import.meta.env.DEV) {
+    const { clearAllParticipants: localClear } = await import("./participants");
+    await localClear();
+  }
+}

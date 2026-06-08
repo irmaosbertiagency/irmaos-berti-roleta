@@ -105,3 +105,42 @@ $$;
 
 -- libera a função para o público (chave anon do front)
 grant execute on function public.spin_roleta(text, text) to anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Funções de administração (exigem a senha do /admin).
+-- A senha abaixo precisa ser a MESMA do painel (VITE_ADMIN_PASSWORD / fallback
+-- em src/routes/admin.tsx). Troque nos dois lugares se mudar.
+-- ---------------------------------------------------------------------------
+create or replace function public.admin_delete(p_password text, p_tiktok text)
+returns int
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_n int;
+begin
+  if p_password is distinct from 'BertiAdmin2026' then
+    raise exception 'unauthorized';
+  end if;
+  delete from public.participants where tiktok = p_tiktok;
+  get diagnostics v_n = row_count;
+  return v_n;
+end;
+$$;
+grant execute on function public.admin_delete(text, text) to anon, authenticated;
+
+create or replace function public.admin_clear_all(p_password text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if p_password is distinct from 'BertiAdmin2026' then
+    raise exception 'unauthorized';
+  end if;
+  delete from public.participants;
+end;
+$$;
+grant execute on function public.admin_clear_all(text) to anon, authenticated;

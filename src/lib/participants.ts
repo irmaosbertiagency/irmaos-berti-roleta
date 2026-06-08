@@ -77,3 +77,20 @@ export const listParticipants = createServerFn({ method: "GET" }).handler(
     return await readAll();
   },
 );
+
+export const deleteParticipant = createServerFn({ method: "POST" })
+  .validator((input: { tiktok: string }) => ({
+    tiktok: normalizeTiktok(String(input?.tiktok ?? "")),
+  }))
+  .handler(async ({ data }) => {
+    const list = await readAll();
+    await writeAll(list.filter((p) => p.tiktok !== data.tiktok));
+    return { ok: true };
+  });
+
+export const clearAllParticipants = createServerFn({ method: "POST" }).handler(
+  async () => {
+    await writeAll([]);
+    return { ok: true };
+  },
+);

@@ -3,8 +3,13 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, RefreshCw, Download, Gem } from "lucide-react";
-import { listParticipants, supabaseConfigured } from "@/lib/api";
+import { Lock, RefreshCw, Download, Gem, Trash2 } from "lucide-react";
+import {
+  listParticipants,
+  deleteParticipant,
+  clearAllParticipants,
+  supabaseConfigured,
+} from "@/lib/api";
 import type { Participant } from "@/lib/diamonds";
 
 export const Route = createFileRoute("/admin")({
@@ -26,6 +31,8 @@ function Admin() {
   const [rows, setRows] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [clearing, setClearing] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -49,6 +56,37 @@ function Admin() {
       setPwdError(false);
     } else {
       setPwdError(true);
+    }
+  };
+
+  const handleDelete = async (p: Participant) => {
+    if (!confirm(`Excluir o registro de ${p.nome} (${p.tiktok})?`)) return;
+    setDeleting(p.tiktok);
+    try {
+      await deleteParticipant(p.tiktok, ADMIN_PASSWORD);
+      setRows((prev) => prev.filter((r) => r.tiktok !== p.tiktok));
+    } catch {
+      alert("Não foi possível excluir. Tente novamente.");
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (
+      !confirm(
+        `Apagar TODOS os ${rows.length} registros? Esta ação não pode ser desfeita.`,
+      )
+    )
+      return;
+    setClearing(true);
+    try {
+      await clearAllParticipants(ADMIN_PASSWORD);
+      setRows([]);
+    } catch {
+      alert("Não foi possível limpar. Tente novamente.");
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -144,6 +182,14 @@ function Admin() {
           >
             <Download className="mr-2 h-4 w-4" /> Exportar CSV
           </Button>
+          <Button
+            onClick={handleClearAll}
+            disabled={!rows.length || clearing}
+            variant="outline"
+            className="h-10 rounded-xl border-destructive/40 text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="mr-2 h-4 w-4" /> Limpar tudo
+          </Button>
         </div>
       </div>
 
@@ -156,12 +202,13 @@ function Admin() {
               <th className="px-5 py-3">@TikTok</th>
               <th className="px-5 py-3">Prêmio</th>
               <th className="px-5 py-3">Data / Hora</th>
+              <th className="px-5 py-3 text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-5 py-10 text-center text-muted-foreground">
+                <td colSpan={6} className="px-5 py-10 text-center text-muted-foreground">
                   {loading ? "Carregando..." : "Nenhum participante ainda."}
                 </td>
               </tr>
@@ -182,6 +229,20 @@ function Admin() {
                   </td>
                   <td className="px-5 py-3 text-muted-foreground">
                     {new Date(p.createdAt).toLocaleString("pt-BR")}
+                  </td>
+                  <td className="px-5 py-3 text-right">
+                    <button
+                      onClick={() => handleDelete(p)}
+                      disabled={deleting === p.tiktok}
+                      title="Excluir"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                    >
+                      {deleting === p.tiktok ? (
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </button>
                   </td>
                 </tr>
               ))
