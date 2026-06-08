@@ -16,7 +16,7 @@ export const Route = createFileRoute("/admin")({
 
 // Senha do painel. Em produção, defina VITE_ADMIN_PASSWORD (ver .env.example).
 const ADMIN_PASSWORD =
-  (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined) || "Gp202120@";
+  (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined) || "BertiAdmin2026";
 
 function Admin() {
   const [authed, setAuthed] = useState(false);
