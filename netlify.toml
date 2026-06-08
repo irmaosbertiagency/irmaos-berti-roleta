@@ -1,0 +1,16 @@
+# Configuração de deploy no Netlify (TanStack Start via Nitro preset "netlify").
+# A função SSR é gerada em .netlify/functions-internal/server e o Netlify a
+# detecta automaticamente. Os estáticos ficam em "dist".
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# As variáveis abaixo devem ser cadastradas em:
+# Site settings → Environment variables (NÃO comite valores reais aqui):
+#   VITE_SUPABASE_URL
+#   VITE_SUPABASE_ANON_KEY
+#   VITE_ADMIN_PASSWORD
