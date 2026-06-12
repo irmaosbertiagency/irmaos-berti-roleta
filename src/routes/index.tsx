@@ -32,7 +32,7 @@ const PRIZES: Prize[] = SLOTS.map((d) => ({
 }));
 
 // WhatsApp da agência (número temporário de recebimento).
-const AGENCY_WHATSAPP = "5515936182659";
+const AGENCY_WHATSAPP = "5515996711645";
 
 function Index() {
   const [leadOpen, setLeadOpen] = useState(false);
